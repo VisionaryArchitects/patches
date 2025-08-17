@@ -1,0 +1,42 @@
+rules:
+  - match: "(?i)ModuleNotFoundError: No module named 'torch'|xformers.*metadata-generation-failed"
+    actions:
+      - type: pip_install
+        args: ["torch","torchvision","torchaudio"]
+        index_url: "https://download.pytorch.org/whl/cu121"
+      - type: re_run
+
+  - match: "(?i)No module named uvicorn"
+    actions:
+      - type: ensure_python_version
+        args: ["3.11"]
+      - type: pip_install
+        args: ["uvicorn","fastapi","pydantic","typer","pyyaml","httpx","psutil","crewai","langgraph"]
+      - type: re_run
+
+  - match: "(?i)unsupported on 3\\.13|requires python 3\\.1[01]"
+    actions:
+      - type: create_venv_with
+        args: ["3.11"]
+      - type: re_run
+
+  - match: "(?i)nvidia-smi: command not found|libcudnn.*not found|CUDA driver"
+    actions:
+      - type: bash_run
+        script: |
+          set -e
+          sudo apt update
+          sudo apt install -y libcudnn8 libcudnn8-dev || true
+          if ! dpkg -l | grep -q cuda-toolkit; then
+            wget -q https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/cuda-ubuntu2404.pin
+            sudo mv cuda-ubuntu2404.pin /etc/apt/preferences.d/cuda-repository-pin-600
+            sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/3bf863cc.pub
+            sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2404/x86_64/ /"
+            sudo apt update && sudo apt install -y cuda-toolkit-12-4
+          fi
+      - type: re_run
+
+  - match: "(?i)No module named supervisor|providers\\.yaml missing|file not found"
+    actions:
+      - type: cd_to_project_root
+      - type: re_run
