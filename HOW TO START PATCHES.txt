@@ -1,0 +1,27 @@
+HOW TO START PATCHES
+
+4) How to use (right now)
+
+Put these three files in agents/patches/ (plus known_fixes.yaml).
+
+Open PowerShell in your project, run:
+
+pwsh -ExecutionPolicy Bypass -File .\agents\patches\run_patches.ps1
+
+
+Watch Patches:
+
+find the project root,
+
+enforce a 3.11 venv,
+
+hit your command,
+
+if it fails → apply landmine fixes (torch/cu121, uvicorn, cwd, etc.),
+
+retry until success or escalation point.
+
+
+
+5) Optional: aim him at vLLM instead
+py -3.11 agents\patches\patches.py bash "python3 -m vllm.entrypoints.api_server --model meta-llama/Meta-Llama-3-8B-Instruct --port 8000 --host 0.0.0.0"
